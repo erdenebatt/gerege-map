@@ -60,6 +60,14 @@ Geocode up to 50 addresses in a single request.
 { "addresses": ["Ulaanbaatar", "Darkhan", "Erdenet"], "source": "csv_import" }
 ```
 
+### `POST /spatial-cluster`
+
+Cluster nearby points using DBSCAN density-based algorithm.
+
+```json
+{ "lat": 47.9184, "lon": 106.9177, "radius_m": 10000, "cluster_distance_m": 1000, "min_points": 1 }
+```
+
 ## Setup
 
 ```bash
@@ -77,6 +85,7 @@ supabase functions deploy geocode
 supabase functions deploy reverse-geocode
 supabase functions deploy nearby-search
 supabase functions deploy batch-geocode
+supabase functions deploy spatial-cluster
 ```
 
 ## Project Structure
@@ -87,12 +96,14 @@ supabase/
     20260214000000_create_geo_registry.sql    # PostGIS + geo_registry table
     20260214000001_geo_registry_rls.sql       # RLS policies
     20260214000002_nearby_search_rpc.sql      # Spatial search RPC
+    20260214000003_spatial_clustering_rpc.sql  # DBSCAN clustering RPC
   functions/
     _shared/cors.ts                           # Shared CORS headers
     geocode/index.ts                          # Forward geocoding
     reverse-geocode/index.ts                  # Reverse geocoding
     nearby-search/index.ts                    # Radius search
     batch-geocode/index.ts                    # Bulk geocoding
+    spatial-cluster/index.ts                  # DBSCAN spatial clustering
 ```
 
 ## License
