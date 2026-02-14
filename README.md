@@ -26,6 +26,18 @@ Location intelligence system built on Supabase and PostGIS.
 
 Row Level Security is enabled — authenticated users can read all entries but can only modify their own.
 
+### `geofences`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | uuid | Primary key |
+| `name` | text | Geofence name |
+| `description` | text | Optional description |
+| `boundary` | geography(Polygon, 4326) | Polygon boundary (GIST indexed) |
+| `metadata` | jsonb | Custom metadata |
+| `created_by` | uuid | References `auth.users` |
+| `created_at` | timestamptz | Row creation timestamp |
+
 ## Edge Functions
 
 ### `POST /geocode`
@@ -68,6 +80,30 @@ Cluster nearby points using DBSCAN density-based algorithm.
 { "lat": 47.9184, "lon": 106.9177, "radius_m": 10000, "cluster_distance_m": 1000, "min_points": 1 }
 ```
 
+### `POST /geofence`
+
+Manage geofences and check point containment. Uses an `action` field to select the operation:
+
+**Create** a polygon geofence:
+```json
+{ "action": "create", "name": "Downtown UB", "polygon": [[106.9,47.91],[106.93,47.91],[106.93,47.93],[106.9,47.93],[106.9,47.91]] }
+```
+
+**Check** if a point is inside any geofence:
+```json
+{ "action": "check", "lat": 47.9184, "lon": 106.9177 }
+```
+
+**Entries** — find geo_registry rows inside a geofence:
+```json
+{ "action": "entries", "fence_id": "uuid-here" }
+```
+
+**List** all geofences:
+```json
+{ "action": "list" }
+```
+
 ## Setup
 
 ```bash
@@ -86,6 +122,7 @@ supabase functions deploy reverse-geocode
 supabase functions deploy nearby-search
 supabase functions deploy batch-geocode
 supabase functions deploy spatial-cluster
+supabase functions deploy geofence
 ```
 
 ## Project Structure
@@ -97,6 +134,7 @@ supabase/
     20260214000001_geo_registry_rls.sql       # RLS policies
     20260214000002_nearby_search_rpc.sql      # Spatial search RPC
     20260214000003_spatial_clustering_rpc.sql  # DBSCAN clustering RPC
+    20260214000004_geofences.sql              # Geofences table, RLS, and RPCs
   functions/
     _shared/cors.ts                           # Shared CORS headers
     geocode/index.ts                          # Forward geocoding
@@ -104,6 +142,7 @@ supabase/
     nearby-search/index.ts                    # Radius search
     batch-geocode/index.ts                    # Bulk geocoding
     spatial-cluster/index.ts                  # DBSCAN spatial clustering
+    geofence/index.ts                         # Geofencing operations
 ```
 
 ## License
